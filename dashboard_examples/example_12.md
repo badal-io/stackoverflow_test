@@ -20,6 +20,7 @@ Dashboard info:
         * type: Markdown
         * description: using HTML contains a link to Test_Dashboard
 
+Note: any fields that are used in LookML dashboards have a format of `view_name.field_name`. Sometime `explore_name` and `view_name` can be the same like in the example below. 
 ```
 - dashboard: test_dashboard_2
   title: Test_Dashboard 2

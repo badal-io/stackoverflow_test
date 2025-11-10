@@ -1,6 +1,7 @@
 view: stackoverflow_users {
   sql_table_name: `@{stackoverflow_users_table}` ;;
 
+  # Primary Key (hidden)
   dimension: id {
     primary_key: yes
     hidden: yes
@@ -8,6 +9,7 @@ view: stackoverflow_users {
     sql: ${TABLE}.id ;;
   }
 
+  # Regular Dimensions
   dimension: display_name {
     type: string
     label: "Display Name"
@@ -18,7 +20,7 @@ view: stackoverflow_users {
   dimension: about_me {
     type: string
     label: "About Me"
-    description: "User's about me information"
+    description: "User's about me section"
     sql: ${TABLE}.about_me ;;
   }
 
@@ -27,13 +29,6 @@ view: stackoverflow_users {
     label: "Age"
     description: "User's age"
     sql: ${TABLE}.age ;;
-  }
-
-  dimension: location {
-    type: string
-    label: "Location"
-    description: "User's location"
-    sql: ${TABLE}.location ;;
   }
 
   dimension: profile_image_url {
@@ -50,6 +45,14 @@ view: stackoverflow_users {
     sql: ${TABLE}.website_url ;;
   }
 
+  dimension: location {
+    type: string
+    label: "Location"
+    description: "User's location (contains many NULL values)"
+    sql: ${TABLE}.location ;;
+  }
+
+  # Time Dimensions
   dimension_group: creation {
     type: time
     label: "Creation"
@@ -80,65 +83,67 @@ view: stackoverflow_users {
     html: {{ rendered_value | date: "%B %Y" }};;
   }
 
-  dimension: reputation_hidden {
+  # Hidden Dimensions for Measures
+  dimension: _reputation {
     hidden: yes
     type: number
-    sql: COALESCE(${TABLE}.reputation, 0) ;;
+    sql: ${TABLE}.reputation ;;
   }
 
-  dimension: up_votes_hidden {
+  dimension: _up_votes {
     hidden: yes
     type: number
-    sql: COALESCE(${TABLE}.up_votes, 0) ;;
+    sql: ${TABLE}.up_votes ;;
   }
 
-  dimension: down_votes_hidden {
+  dimension: _down_votes {
     hidden: yes
     type: number
-    sql: COALESCE(${TABLE}.down_votes, 0) ;;
+    sql: ${TABLE}.down_votes ;;
   }
 
-  dimension: views_hidden {
+  dimension: _views {
     hidden: yes
     type: number
-    sql: COALESCE(${TABLE}.views, 0) ;;
+    sql: ${TABLE}.views ;;
   }
 
+  # Measures
   measure: reputation {
     type: sum
-    label: "Reputation"
-    description: "Total reputation"
-    sql: ${reputation_hidden} ;;
+    label: "Total Reputation"
+    description: "Sum of user reputation scores"
+    sql: IFNULL(${_reputation}, 0) ;;
     value_format: "#,##0.00"
   }
 
   measure: up_votes {
     type: sum
-    label: "Up Votes"
-    description: "Total up votes"
-    sql: ${up_votes_hidden} ;;
+    label: "Total Up Votes"
+    description: "Sum of up votes received by users"
+    sql: IFNULL(${_up_votes}, 0) ;;
     value_format: "#,##0.00"
   }
 
   measure: down_votes {
     type: sum
-    label: "Down Votes"
-    description: "Total down votes"
-    sql: ${down_votes_hidden} ;;
+    label: "Total Down Votes"
+    description: "Sum of down votes received by users"
+    sql: IFNULL(${_down_votes}, 0) ;;
     value_format: "#,##0.00"
   }
 
   measure: views {
     type: sum
-    label: "Views"
-    description: "Total views"
-    sql: ${views_hidden} ;;
+    label: "Total Views"
+    description: "Sum of views on user profiles"
+    sql: IFNULL(${_views}, 0) ;;
     value_format: "#,##0.00"
   }
 
   measure: count {
     type: count
-    label: "Count"
-    description: "Number of users"
+    label: "Number of Users"
+    description: "Total count of users"
   }
 }

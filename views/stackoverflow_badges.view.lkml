@@ -1,6 +1,7 @@
 view: stackoverflow_badges {
   sql_table_name: `@{stackoverflow_badges_table}` ;;
 
+  # Primary Key (hidden)
   dimension: id {
     primary_key: yes
     hidden: yes
@@ -8,10 +9,11 @@ view: stackoverflow_badges {
     sql: ${TABLE}.id ;;
   }
 
+  # Regular Dimensions
   dimension: name {
     type: string
-    label: "Name"
-    description: "Badge name"
+    label: "Badge Name"
+    description: "Name of the badge"
     sql: ${TABLE}.name ;;
   }
 
@@ -24,18 +26,19 @@ view: stackoverflow_badges {
 
   dimension: class {
     type: number
-    label: "Class"
-    description: "Badge class"
+    label: "Badge Class"
+    description: "Class level of the badge"
     sql: ${TABLE}.class ;;
   }
 
   dimension: tag_based {
     type: yesno
     label: "Tag Based"
-    description: "Whether this is a tag-based badge"
+    description: "Whether the badge is tag-based"
     sql: ${TABLE}.tag_based ;;
   }
 
+  # Time Dimension
   dimension_group: date {
     type: time
     label: "Date"
@@ -51,9 +54,10 @@ view: stackoverflow_badges {
     html: {{ rendered_value | date: "%B %Y" }};;
   }
 
+  # Measures
   measure: count {
     type: count
-    label: "Count"
-    description: "Number of badges"
+    label: "Number of Badges"
+    description: "Total count of badges earned"
   }
 }
