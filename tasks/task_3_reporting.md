@@ -32,9 +32,12 @@ or, if your LookML dashboards appear within a folder in the IDE, use the path to
 Create a dashboard with general info from both of big explores (stackoverflow_badges_users and stackoverflow_comments_users)
 
 * Name: StackOverflow Badges and Comments
-* Filters: Add filters for main string dimensions + filter for both date dimensions for comments and badges. 
-* Tiles: 4 single value tiles with general information (total number of something)
-2-3 tiles of bar/column charts to show distributions of totals by date or some category
+* Filters: Add filters for main string dimensions
+* Tiles: 
+   * 4 single value tiles with general information (total number of something)
+   * Bar chart: total of user by badge class
+   * column chart: top 25 users by number of comments
+   * table report: comment id, post id, user id, display name, average score
 * Text tiles: create a text tile with a short description of the dashboard
 
 ...

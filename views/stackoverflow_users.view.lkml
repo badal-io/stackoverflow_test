@@ -1,20 +1,10 @@
 view: stackoverflow_users {
   sql_table_name: `@{stackoverflow_users_table}` ;;
 
-  # Primary Key (hidden)
   dimension: id {
     primary_key: yes
     hidden: yes
     type: number
-    sql: ${TABLE}.id ;;
-  }
-
-  # Dimensions
-  dimension: user_id {
-    type: number
-    primary_key: yes
-    label: "User ID"
-    description: "Unique identifier for the user"
     sql: ${TABLE}.id ;;
   }
 
@@ -28,7 +18,7 @@ view: stackoverflow_users {
   dimension: about_me {
     type: string
     label: "About Me"
-    description: "User's about me section"
+    description: "User's about me information"
     sql: ${TABLE}.about_me ;;
   }
 
@@ -37,6 +27,13 @@ view: stackoverflow_users {
     label: "Age"
     description: "User's age"
     sql: ${TABLE}.age ;;
+  }
+
+  dimension: location {
+    type: string
+    label: "Location"
+    description: "User's location"
+    sql: ${TABLE}.location ;;
   }
 
   dimension: profile_image_url {
@@ -53,14 +50,6 @@ view: stackoverflow_users {
     sql: ${TABLE}.website_url ;;
   }
 
-  dimension: location {
-    type: string
-    label: "Location"
-    description: "User's location (contains many NULL values)"
-    sql: ${TABLE}.location ;;
-  }
-
-  # Dimension Groups (Date/Time)
   dimension_group: creation {
     type: time
     label: "Creation"
@@ -91,68 +80,65 @@ view: stackoverflow_users {
     html: {{ rendered_value | date: "%B %Y" }};;
   }
 
-  # Hidden dimensions for measures
-  dimension: reputation_value {
+  dimension: reputation_hidden {
     hidden: yes
     type: number
-    sql: ${TABLE}.reputation ;;
+    sql: COALESCE(${TABLE}.reputation, 0) ;;
   }
 
-  dimension: up_votes_value {
+  dimension: up_votes_hidden {
     hidden: yes
     type: number
-    sql: ${TABLE}.up_votes ;;
+    sql: COALESCE(${TABLE}.up_votes, 0) ;;
   }
 
-  dimension: down_votes_value {
+  dimension: down_votes_hidden {
     hidden: yes
     type: number
-    sql: ${TABLE}.down_votes ;;
+    sql: COALESCE(${TABLE}.down_votes, 0) ;;
   }
 
-  dimension: views_value {
+  dimension: views_hidden {
     hidden: yes
     type: number
-    sql: ${TABLE}.views ;;
+    sql: COALESCE(${TABLE}.views, 0) ;;
   }
 
-  # Measures
-  measure: total_reputation {
+  measure: reputation {
     type: sum
-    label: "Total Reputation"
-    description: "Sum of all user reputation"
-    sql: COALESCE(${reputation_value}, 0) ;;
+    label: "Reputation"
+    description: "Total reputation"
+    sql: ${reputation_hidden} ;;
     value_format: "#,##0.00"
   }
 
-  measure: total_up_votes {
+  measure: up_votes {
     type: sum
-    label: "Total Up Votes"
-    description: "Total number of up votes received"
-    sql: COALESCE(${up_votes_value}, 0) ;;
+    label: "Up Votes"
+    description: "Total up votes"
+    sql: ${up_votes_hidden} ;;
     value_format: "#,##0.00"
   }
 
-  measure: total_down_votes {
+  measure: down_votes {
     type: sum
-    label: "Total Down Votes"
-    description: "Total number of down votes received"
-    sql: COALESCE(${down_votes_value}, 0) ;;
+    label: "Down Votes"
+    description: "Total down votes"
+    sql: ${down_votes_hidden} ;;
     value_format: "#,##0.00"
   }
 
-  measure: total_views {
+  measure: views {
     type: sum
-    label: "Total Views"
-    description: "Total number of views"
-    sql: COALESCE(${views_value}, 0) ;;
+    label: "Views"
+    description: "Total views"
+    sql: ${views_hidden} ;;
     value_format: "#,##0.00"
   }
 
   measure: count {
     type: count
-    label: "Count of Users"
-    description: "Total number of users"
-    drill_fields: [user_id, display_name, location, creation_date]
+    label: "Count"
+    description: "Number of users"
   }
 }

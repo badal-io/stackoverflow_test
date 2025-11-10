@@ -168,6 +168,7 @@ Measures:
 * Measure values can be NULLs so please make sure to convert NULLs to 0 for measures otherwise aggregation won't work
 * All measures should have the following format: value_format: "#,##0.00"
 * None of the tables have a primary key so I would like you to add it to each view and declare it as a primary key and make it hidden
+  * There can be only 1 primary key per view
 * define both table names as constants in the manifest file and use those constants in 'sql_table_name' or 'derived_table'
 
 
@@ -194,6 +195,10 @@ dimension: created_month_year {
    html: {{ rendered_value | date: "%B %Y" }};;
  }
 ```
+
+Please not that group_label for the formated date should be "label name from the dimension_group" + " " + "Date". This is how Looker creates dimension groups.
+In the example above, dimension_group has label "Created" and group_label for the formated dimension is "Created Date". 
+If the dimension_group label is "Date" then group_label for the formated dimension is "Date Date".
 
 ## Defining geo dimensions that can be used in map chart
 ### type: location
