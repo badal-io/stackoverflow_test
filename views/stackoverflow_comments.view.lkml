@@ -1,6 +1,7 @@
 view: stackoverflow_comments {
   sql_table_name: `@{stackoverflow_comments_table}` ;;
 
+  # Primary Key (hidden)
   dimension: id {
     primary_key: yes
     hidden: yes
@@ -8,10 +9,11 @@ view: stackoverflow_comments {
     sql: ${TABLE}.id ;;
   }
 
+  # Regular Dimensions
   dimension: text {
     type: string
-    label: "Text"
-    description: "Comment text"
+    label: "Comment Text"
+    description: "Text content of the comment"
     sql: ${TABLE}.text ;;
   }
 
@@ -25,17 +27,18 @@ view: stackoverflow_comments {
   dimension: user_id {
     type: number
     label: "User ID"
-    description: "ID of the user who wrote the comment"
+    description: "ID of the user who made the comment"
     sql: ${TABLE}.user_id ;;
   }
 
   dimension: user_display_name {
     type: string
     label: "User Display Name"
-    description: "Display name of the user who wrote the comment"
+    description: "Display name of the user who made the comment"
     sql: ${TABLE}.user_display_name ;;
   }
 
+  # Time Dimension
   dimension_group: creation {
     type: time
     label: "Creation"
@@ -51,23 +54,25 @@ view: stackoverflow_comments {
     html: {{ rendered_value | date: "%B %Y" }};;
   }
 
-  dimension: score_hidden {
+  # Hidden Dimension for Measure
+  dimension: _score {
     hidden: yes
     type: number
-    sql: COALESCE(${TABLE}.score, 0) ;;
+    sql: ${TABLE}.score ;;
   }
 
+  # Measures
   measure: score {
     type: sum
-    label: "Score"
-    description: "Total score of comments"
-    sql: ${score_hidden} ;;
+    label: "Total Score"
+    description: "Sum of comment scores"
+    sql: IFNULL(${_score}, 0) ;;
     value_format: "#,##0.00"
   }
 
   measure: count {
     type: count
-    label: "Count"
-    description: "Number of comments"
+    label: "Number of Comments"
+    description: "Total count of comments"
   }
 }
