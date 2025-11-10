@@ -1,243 +1,232 @@
-# StackOverflow Looker Project Documentation
+# StackOverflow Test - LookML Project Documentation
 
 **Documentation Generated:** November 10, 2025
 
-## Overview
+---
 
-This is a Looker project for analyzing StackOverflow data. The project uses BigQuery as the underlying database and provides a comprehensive semantic layer with views, explores, dashboards, and data quality tests.
+## Project Overview
 
-## Data Source
+This is a LookML project for the StackOverflow dataset connected to BigQuery. The project provides a semantic layer for analyzing user activity, badges, and comments from the StackOverflow platform.
 
-- **Database:** BigQuery (GCP)
+---
+
+## Source Data
+
+### Database Connection
 - **Connection:** `badal_internal_projects`
-- **Source Tables:**
-  - `prj-s-dlp-dq-sandbox-0b3c.EK_test_data.stackoverflow_users` - User profile data
-  - `prj-s-dlp-dq-sandbox-0b3c.EK_test_data.stackoverflow_badges` - Badge awards and classifications
-  - `prj-s-dlp-dq-sandbox-0b3c.EK_test_data.stackoverflow_comments` - User comments and discussions
+- **Database:** BigQuery (GCP)
+- **Project:** `prj-s-dlp-dq-sandbox-0b3c`
+- **Schema:** `EK_test_data`
 
-## Project Structure
+### Data Tables
 
+#### 1. stackoverflow_users
+- **Table Name:** `prj-s-dlp-dq-sandbox-0b3c.EK_test_data.stackoverflow_users`
+- **Description:** Contains user profile information and reputation metrics
+- **Key Fields:**
+  - `id` (INT64): Unique user identifier
+  - `display_name` (STRING): User's display name
+  - `reputation` (INT64): User's reputation score
+  - `up_votes` (INT64): Total up votes received
+  - `down_votes` (INT64): Total down votes received
+  - `views` (INT64): Total views on user's content
+  - `creation_date` (TIMESTAMP): Account creation date
+  - `last_access_date` (TIMESTAMP): Last activity date
+
+#### 2. stackoverflow_badges
+- **Table Name:** `prj-s-dlp-dq-sandbox-0b3c.EK_test_data.stackoverflow_badges`
+- **Description:** Contains badge achievements by users
+- **Key Fields:**
+  - `id` (INT64): Unique badge record identifier
+  - `user_id` (INT64): User who earned the badge
+  - `name` (STRING): Badge name
+  - `class` (INT64): Badge class (1, 2, or 3)
+  - `tag_based` (BOOL): Whether badge is tag-based
+  - `date` (TIMESTAMP): Date badge was earned
+
+#### 3. stackoverflow_comments
+- **Table Name:** `prj-s-dlp-dq-sandbox-0b3c.EK_test_data.stackoverflow_comments`
+- **Description:** Contains comments on posts
+- **Key Fields:**
+  - `id` (INT64): Unique comment identifier
+  - `user_id` (INT64): User who wrote the comment
+  - `text` (STRING): Comment text content
+  - `score` (INT64): Comment score/rating
+  - `creation_date` (TIMESTAMP): When comment was created
+  - `post_id` (INT64): Post the comment belongs to
+
+---
+
+## Semantic Layer Structure
+
+### Project Structure
 ```
 stackoverflow_test/
-├── manifest.lkml                      # Constants for table names
-├── datagroups.lkml                    # Caching policies (12-hour refresh)
-├── stackoverflow_test.model.lkml       # Main model file
-├── views/                             # View definitions
+├── manifest.lkml                          # Project constants
+├── datagroups.lkml                        # Caching configuration
+├── stackoverflow_test.model.lkml           # Main model file
+├── views/                                 # View definitions
 │   ├── stackoverflow_users.view.lkml
 │   ├── stackoverflow_badges.view.lkml
 │   └── stackoverflow_comments.view.lkml
-├── explores/                          # Explore definitions
+├── explores/                              # Explore definitions
 │   └── explores.lkml
-├── LookML_Dashboards/                # Dashboard definitions
+├── LookML_Dashboards/                     # Dashboard definitions
 │   └── stackoverflow_badges_and_comments.dashboard.lookml
-├── data_tests/                        # Data quality tests
+├── data_tests/                            # Data quality tests
 │   └── data_tests.lkml
-└── README.md                          # This file
+└── README.md                              # This file
 ```
-
-## Semantic Layer
 
 ### Views
 
-#### 1. stackoverflow_users
-Represents StackOverflow user profiles and activity.
+#### stackoverflow_users
+Provides user profile and activity metrics.
+- **Primary Key:** `id` (hidden)
+- **Dimensions:** display_name, about_me, age, location, profile_image_url, website_url
+- **Time Dimensions:** creation_date, last_access_date (with month/year formatting)
+- **Measures:** reputation, up_votes, down_votes, views, count
 
-**Key Dimensions:**
-- `user_id` (Primary Key, hidden)
-- `display_name` - User's displayed name on the platform
-- `about_me` - User's bio/description
-- `age` - User's age
-- `location` - Geographic location (many NULL values)
-- `profile_image_url` - URL to user's profile image
-- `website_url` - User's external website
+#### stackoverflow_badges
+Provides badge achievement data.
+- **Primary Key:** `id` (hidden)
+- **Dimensions:** name, user_id, class, tag_based
+- **Time Dimensions:** date (with month/year formatting)
+- **Measures:** count
 
-**Date Dimensions:**
-- `creation_date` - When the user joined (with formatted month/year)
-- `last_access_date` - Last login date (with formatted month/year)
-
-**Measures:**
-- `total_reputation` - Sum of user reputation scores
-- `total_up_votes` - Total up votes received
-- `total_down_votes` - Total down votes received
-- `total_views` - Total profile views
-- `count` - Number of users
-
-#### 2. stackoverflow_badges
-Represents badges earned by users on StackOverflow.
-
-**Key Dimensions:**
-- `badge_id` (Primary Key, hidden)
-- `name` - Name of the badge
-- `user_id` - User who earned the badge
-- `class` - Badge classification (1=Gold, 2=Silver, 3=Bronze)
-- `tag_based` - Whether badge is tag-specific
-
-**Date Dimensions:**
-- `date` - When badge was awarded (with formatted month/year)
-
-**Measures:**
-- `count` - Number of badges awarded
-- `count_users_with_badges` - Unique users with badges
-- `count_badge_types` - Different badge types
-
-#### 3. stackoverflow_comments
-Represents comments made by users on posts.
-
-**Key Dimensions:**
-- `comment_id` (Primary Key, hidden)
-- `text` - Comment content
-- `post_id` - Post being commented on
-- `user_id` - User making comment
-- `user_display_name` - Commenter's display name
-
-**Date Dimensions:**
-- `creation_date` - When comment was posted (with formatted month/year)
-
-**Measures:**
-- `total_score` - Sum of comment scores
-- `average_score` - Average comment score
-- `count` - Number of comments
-- `count_users_commenting` - Unique users commenting
-- `count_posts_commented` - Unique posts with comments
+#### stackoverflow_comments
+Provides comment data with scoring.
+- **Primary Key:** `id` (hidden)
+- **Dimensions:** text, post_id, user_id, user_display_name
+- **Time Dimensions:** creation_date (with month/year formatting)
+- **Measures:** score, count
 
 ### Explores
 
+#### stackoverflow_badges_users
+- **Base View:** stackoverflow_badges
+- **Joins:** stackoverflow_users (left outer, many-to-one)
+- **Purpose:** Analyze badges awarded to users and user profiles together
+- **Caching:** 12-hour refresh interval, 24-hour cache retention
+
+#### stackoverflow_comments_users
+- **Base View:** stackoverflow_comments
+- **Joins:** stackoverflow_users (left outer, many-to-one)
+- **Purpose:** Analyze comments and their authors
+- **Caching:** 12-hour refresh interval, 24-hour cache retention
+
 #### Single View Explores
-- **stackoverflow_users** - Direct analysis of user data
-- **stackoverflow_badges** - Direct analysis of badge data
-- **stackoverflow_comments** - Direct analysis of comment data
+- **stackoverflow_users:** Standalone user analysis
+- **stackoverflow_badges:** Standalone badge analysis
+- **stackoverflow_comments:** Standalone comment analysis
+- **Caching:** All use 12-hour refresh, 24-hour cache retention
 
-#### Multi-View Explores with Joins
+---
 
-**stackoverflow_badges_users**
-- Base: stackoverflow_badges
-- Join: stackoverflow_users (left outer join)
-- Relationship: many-to-one (many badges → one user)
-- Use Case: Analyze badge awards in context of user information
+## Reports (Dashboards)
 
-**stackoverflow_comments_users**
-- Base: stackoverflow_comments
-- Join: stackoverflow_users (left outer join)
-- Relationship: many-to-one (many comments → one user)
-- Use Case: Analyze comments in context of user information
+### StackOverflow Badges and Comments
+A comprehensive dashboard providing general insights from badges and comments data.
 
-## Reports & Dashboards
+**Filters:**
+- Badge Name (tag list, multiple values)
+- User Display Name (tag list, multiple values)
 
-### StackOverflow Badges and Comments Dashboard
+**Tiles:**
 
-**Purpose:** Comprehensive view of badge distribution and user engagement through comments.
+1. **Dashboard Description** (Text Tile)
+   - Overview of the dashboard purpose and capabilities
 
-**Layout:** Newspaper (responsive grid layout)
+2. **Total Badges** (Single Value)
+   - Displays total count of all badges
 
-**Components:**
+3. **Total Comments** (Single Value)
+   - Displays total count of all comments
 
-1. **Text Tile:** Dashboard description and usage guide
+4. **Total Users with Badges** (Single Value)
+   - Displays count of unique users who have badges
 
-2. **Key Metrics (4 Single Value Tiles):**
-   - Total Badges Awarded
-   - Total Users with Badges
-   - Total Comments
-   - Total Comments Score
+5. **Total Users with Comments** (Single Value)
+   - Displays count of unique users who have comments
 
-3. **Data Visualizations:**
-   - **Badges by Badge Name** (Column Chart) - Distribution of top badge awards
-   - **Comments Over Time** (Line Chart) - Comment trend analysis by month/year
-   - **Top Users by Comments** (Bar Chart) - Most active commenters
-   - **Badge Distribution by Class** (Pie Chart) - Gold/Silver/Bronze breakdown
+6. **Total Users by Badge Class** (Bar Chart)
+   - Horizontal bar chart showing badge count by badge class
+   - Sorted by count descending
 
-4. **Filters:**
-   - Badge Name (multi-select tag list)
-   - Badge Creation Date (relative timeframes)
-   - User Display Name (multi-select tag list)
-   - Comments Creation Date (relative timeframes)
-   - User Location (multi-select tag list)
+7. **Top 25 Users by Comment Count** (Column Chart)
+   - Top 25 users ranked by their comment activity
+   - Sorted by count descending
 
-**Filter Behavior:** All tiles listen to relevant filters for interactive analysis across both explores.
+8. **Comment Details Report** (Table)
+   - Shows comment ID, post ID, user ID, user display name, and score
+   - Displays up to 25 rows
+
+---
 
 ## Caching Strategy
 
-**Datagroup:** `twelve_hour_update`
+### Datagroup: twelve_hour_update
 - **Refresh Interval:** Every 12 hours (midnight and noon)
-- **Cache Duration:** 24 hours maximum
-- **Applies To:** All explores in the project
-- **Benefit:** Balances data freshness with query performance
+- **Cache Retention:** 24 hours maximum
+- **Applied To:** All explores in the project
+
+This ensures data freshness while optimizing query performance.
+
+---
 
 ## Data Quality Tests
 
-### Test 1: user_display_name_not_null
-- **Purpose:** Ensure all users have a display name
+### user_display_name_not_null
 - **Explore:** stackoverflow_users
-- **Assertion:** display_name field is NOT NULL
-- **Frequency:** Runs automatically with test suite
+- **Purpose:** Validates that all users have non-null display names
+- **Ensures:** Data integrity for user identification
 
-### Test 2: badges_class_check
-- **Purpose:** Validate badge class values (1, 2, or 3)
+### badges_class_check
 - **Explore:** stackoverflow_badges
-- **Assertion:** class field contains only values 1, 2, or 3
-- **Frequency:** Runs automatically with test suite
+- **Purpose:** Validates that all badge classes are within valid range (1, 2, or 3)
+- **Ensures:** Data consistency for badge classifications
 
-## Best Practices Implemented
+---
 
-- ✓ All dimensions and measures have labels and descriptions
-- ✓ Measures defined as hidden dimensions first, then as measures
-- ✓ NULL values handled in measures (converted to 0 for aggregation)
-- ✓ Measures formatted with value_format: "#,##0.00"
-- ✓ Primary keys defined as hidden in all views
-- ✓ Table names defined as constants in manifest.lkml
-- ✓ Dimension groups with timeframes for date analysis
-- ✓ Formatted date dimensions with month/year display
-- ✓ Relationship types specified for all joins (many-to-one)
-- ✓ Explicit view labels for joined views
-- ✓ Caching policies applied at model and explore levels
-- ✓ Data quality tests for data integrity
+## Constants (manifest.lkml)
 
-## File Types Reference
+The project uses constants for table references:
+- `stackoverflow_users_table`: `prj-s-dlp-dq-sandbox-0b3c.EK_test_data.stackoverflow_users`
+- `stackoverflow_badges_table`: `prj-s-dlp-dq-sandbox-0b3c.EK_test_data.stackoverflow_badges`
+- `stackoverflow_comments_table`: `prj-s-dlp-dq-sandbox-0b3c.EK_test_data.stackoverflow_comments`
 
-- **Model Files:** `*.model.lkml` (connection definition and includes)
-- **View Files:** `*.view.lkml` (dimension and measure definitions)
-- **Explore Files:** `*.lkml` (explore definitions)
-- **Dashboard Files:** `*.dashboard.lookml` (dashboard tiles and filters)
-- **Test Files:** `*.lkml` (data quality tests)
-- **Manifest Files:** `manifest.lkml` (constants and shared configurations)
+---
 
-## How to Use This Project
+## Key Features
 
-1. **Exploring Data:**
-   - Start with single-view explores for basic data exploration
-   - Use multi-view explores to analyze relationships between users and their activity
+✓ **Three Core Views** - Users, Badges, and Comments with comprehensive dimensions and measures
+✓ **Joined Explores** - Badges-with-Users and Comments-with-Users for cross-table analysis
+✓ **Comprehensive Dashboard** - Multiple visualizations and filters for insights
+✓ **Caching Strategy** - 12-hour refresh cycles with 24-hour cache for performance
+✓ **Data Quality Tests** - Automated validation of critical data fields
+✓ **Well-Documented** - Clear labels, descriptions, and time formatting across all elements
 
-2. **Using Dashboards:**
-   - Access the "StackOverflow Badges and Comments" dashboard for high-level insights
-   - Use filters to drill down into specific users, date ranges, and locations
+---
 
-3. **Viewing Reports:**
-   - Single value tiles provide key metrics at a glance
-   - Charts show trends and distributions
-   - All visualizations support cross-filtering
+## Usage Notes
 
-4. **Monitoring Data Quality:**
-   - Review data test results in the Looker IDE
-   - Tests run on a schedule to catch data anomalies early
+1. All dimension and measure fields include descriptive labels and descriptions
+2. Measures are formatted with comma separators and two decimal places
+3. Date/timestamp fields use dimension_group with time formatting
+4. All views have hidden primary keys for proper join logic
+5. Null values in numeric measures are converted to 0 for accurate aggregations
+6. The dashboard uses cross-filtering to enable interactive exploration
 
-## Maintenance
+---
 
-- **Model Updates:** Modify `views/` and `explores/` folders
-- **Dashboard Changes:** Edit files in `LookML_Dashboards/`
-- **Caching Adjustments:** Update `datagroups.lkml` for different refresh requirements
-- **Test Updates:** Modify `data_tests/data_tests.lkml` for new data quality checks
+## Model File Configuration
 
-## Technical Specifications
-
-- **Looker Version:** Compatible with current Looker versions
-- **Database:** BigQuery
-- **Time Zone:** Default (configured in BigQuery connection)
-- **Default Viewer:** Dashboards-next
-
-## Support & Documentation
-
-For more information on Looker and LookML, refer to:
-- [Looker Documentation](https://cloud.google.com/looker/docs)
-- [LookML Reference](https://cloud.google.com/looker/docs/r/lookml)
+The main model file includes:
+- Datagroups for caching policies
+- All views from the views folder
+- All explores from the explores folder
+- All dashboards from the LookML_Dashboards folder
+- All data tests from the data_tests folder
 
 ---
 
