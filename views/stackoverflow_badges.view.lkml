@@ -9,7 +9,7 @@ view: stackoverflow_badges {
     sql: ${TABLE}.id ;;
   }
 
-  # Regular Dimensions
+  # Regular Dimensions!
   dimension: name {
     type: string
     label: "Badge Name"
